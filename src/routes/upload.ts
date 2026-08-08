@@ -212,7 +212,7 @@ export function makeUploadRouter(
         if (req.file) {
           deleteFile(req.file.path);
         }
-        logger.warn({ err: (err as Error).message }, 'Upload rejected');
+        logger.warn({ err }, 'Upload rejected');
         if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
           res.status(413).send(err.message);
         } else {
@@ -391,7 +391,16 @@ export function makeUploadRouter(
           });
           expireKey(key, keys);
           logger.info(
-            { key, filename: finalName, size: convertedSize, ip: clientIp(req) },
+            {
+              key,
+              filename: finalName,
+              ext: path.extname(finalName).slice(1),
+              mimetype,
+              converted: conversionTool !== null,
+              size: convertedSize,
+              originalSize: req.file.size,
+              ip: clientIp(req),
+            },
             'File staged'
           );
           notifySSE(key, info);
